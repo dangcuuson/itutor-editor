@@ -31,7 +31,7 @@ export interface DraftDecorator<TProps = Object> {
 // https://github.com/draft-js-plugins/draft-js-plugins/blob/master/HOW_TO_CREATE_A_PLUGIN.md
 export interface DraftPlugin {
     blockRendererFn?: (block: ContentBlock, pluginFuncs: PluginFunctions) => any;
-    keyBindingFn: (e: SyntheticKeyboardEvent, pluginFuncs: PluginFunctions) => string | null;
+    keyBindingFn?: (e: SyntheticKeyboardEvent, pluginFuncs: PluginFunctions) => string | null;
     blockStyleFn?: (block: ContentBlock, pluginFuncs: PluginFunctions) => string;
     blockRendererMap?: Immutable.Map<any, any>;
     customStyleMap?: any;

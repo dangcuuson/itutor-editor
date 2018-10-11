@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import ITutorEditor from './itutorEditor/iTutorEditor';
+import App from './App';
 
 ReactDOM.render(
-  <ITutorEditor />,
+  <App />,
   document.getElementById('root') as HTMLElement
 );
