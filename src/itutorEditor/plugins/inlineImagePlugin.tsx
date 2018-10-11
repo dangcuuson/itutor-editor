@@ -22,18 +22,29 @@ export const createInlineImgPlugin = (): DraftPlugin => {
                 };
                 block.findEntityRanges(filterFn, callback);
             },
-            component: (props) => {
-                const entity = props.contentState.getEntity(props.entityKey);
-                return (
-                    <span>
-                        <img src={entity.data.src} style={{ width: '10%' }} />
-                        {props.children}
-                    </span>
-                );
-            }
+            component: InlineImgComponent
         }]
     };
 };
+
+class InlineImgComponent extends React.Component<any> {
+    render() {
+        const props = this.props;
+        console.log('>>props', props);
+        const entity = props.contentState.getEntity(props.entityKey);
+        return (
+            <span>
+                <img
+                    src={entity.data.src}
+                    style={{ width: '10%', cursor: 'pointer' }}
+                />
+                {React.Children.map(props.children, (child => {
+                    return child;
+                }))}
+            </span>
+        );
+    }
+}
 
 export const insertImgFn = (editorState: EditorState, data: ImgData): EditorState => {
     const contentState = editorState.getCurrentContent();
