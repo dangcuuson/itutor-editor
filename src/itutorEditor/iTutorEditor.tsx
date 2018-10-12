@@ -1,11 +1,12 @@
 import * as React from 'react';
 import {
-    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw
+    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw, ContentBlock
 } from 'draft-js';
 import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
 import { createInlineImgPlugin, InsertImgBtn } from './plugins/inlineImagePlugin';
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
 import Toolbar from './plugins/toolbar';
+import './iTutorEditor.css';
 
 interface Props { }
 
@@ -26,7 +27,7 @@ export default class ITutorEditor extends React.Component<Props, State> {
                     : EditorState.createEmpty()
         };
         this.plugins.push(
-            createAlignmentPlugin(),
+            // createAlignmentPlugin(),
             createInlineImgPlugin()
         );
     }
@@ -40,6 +41,18 @@ export default class ITutorEditor extends React.Component<Props, State> {
             return 'handled';
         }
         return 'not-handled';
+    }
+
+    blockStyleFn = (contentBlock: ContentBlock) => {
+        const blockData = contentBlock.getData();
+        const align = blockData.get('alignment');
+        if (align === 'left') {
+            return 'iTutor-editor-align-left';
+        }
+        if (align === 'right') {
+            return 'iTutor-editor-align-right';
+        }
+        return '';
     }
 
     componentDidUpdate() {
@@ -59,6 +72,7 @@ export default class ITutorEditor extends React.Component<Props, State> {
                     onChange={this.onChange}
                     plugins={this.plugins}
                     handleKeyCommand={this.handleRichTextCommand}
+                    blockStyleFn={this.blockStyleFn}
                 />
                 <InsertImgBtn
                     editorState={this.state.editorState}

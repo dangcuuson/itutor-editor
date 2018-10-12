@@ -1,3 +1,4 @@
+/* tslint:disable */
 import * as React from 'react';
 import { EditorState, Modifier, CharacterMetadata, ContentState } from 'draft-js';
 import { DraftPlugin } from './draft-js-plugins-editor';
@@ -45,7 +46,7 @@ class InlineImgComponent extends React.Component<InlineImgProps> {
                 <img
                     src={data.src}
                     style={{ width: '10%', cursor: 'pointer' }}
-                />
+                />                
                 {this.props.children}
             </span>
         );

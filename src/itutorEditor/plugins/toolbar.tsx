@@ -4,7 +4,7 @@ import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
 import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify } from '@material-ui/icons';
-import { getAlignmentData, setAlignmentData, AlignmentData } from './alignmentPlugin';
+import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';
 
 interface OwnProps {
     editorState: EditorState;
@@ -20,8 +20,8 @@ class Toolbar extends React.Component<Props> {
         this.props.onChange(newEditorState);
     }
 
-    setAlignment = (alignment: AlignmentData['alignment']) => {
-        const newEditorState = setAlignmentData(this.props.editorState, { alignment });
+    setAlignment = (alignment: Alignment) => {
+        const newEditorState = setAlignment(this.props.editorState, alignment);
         this.props.onChange(newEditorState);
     }
 
@@ -30,7 +30,7 @@ class Toolbar extends React.Component<Props> {
     render() {
         const { editorState, classes } = this.props;
         const inlineStyles = editorState.getCurrentInlineStyle().toArray();
-        const alignment = getAlignmentData(editorState).alignment;
+        const alignment = getAlignment(editorState);
         return (
             <React.Fragment>
                 <ToggleButtonGroup value={inlineStyles} className={classes.toggleContainer}>
@@ -58,6 +58,7 @@ class Toolbar extends React.Component<Props> {
                     <ToggleButton
                         value="left"
                         onMouseDown={this.preventBubblingUp}
+                        onClick={() => this.setAlignment('left')}
                         children={<FormatAlignLeft />}
                     />
                     <ToggleButton
@@ -68,6 +69,7 @@ class Toolbar extends React.Component<Props> {
                     <ToggleButton
                         value="right"
                         onMouseDown={this.preventBubblingUp}
+                        onClick={() => this.setAlignment('right')}
                         children={<FormatAlignRight />}
                     />
                     <ToggleButton
