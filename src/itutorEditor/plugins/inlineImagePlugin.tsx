@@ -45,8 +45,8 @@ class InlineImgComponent extends React.Component<InlineImgProps> {
             <span>
                 <img
                     src={data.src}
-                    style={{ width: '10%', cursor: 'pointer' }}
-                />                
+                    style={{ cursor: 'pointer' }}
+                />
                 {this.props.children}
             </span>
         );
@@ -102,7 +102,7 @@ export class InsertImgBtn extends React.Component<InsertImgBtnProps, InsertImgBt
             <div>
                 <button
                     // tslint:disable-next-line:max-line-length
-                    onClick={() => this.insertImg({ src: 'https://cdn.vox-cdn.com/thumbor/th5YNVqlkHqkz03Va5RPOXZQRhA=/0x0:2040x1360/1200x800/filters:focal(857x517:1183x843)/cdn.vox-cdn.com/uploads/chorus_image/image/57358643/jbareham_170504_1691_0020.0.0.jpg' })}
+                    onClick={() => this.insertImg({ src: 'https://support.kickofflabs.com/wp-content/uploads/2016/06/300x150.png' })}
                     children="Insert dummy img"
                 />
             </div>

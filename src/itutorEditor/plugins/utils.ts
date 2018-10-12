@@ -15,6 +15,9 @@ export const getSelectedBlocks = (editorState: EditorState): ContentBlock[] => {
 
         while (blockKey !== focusKey) {
             const nextBlock = contentState.getBlockAfter(blockKey);
+            if (!nextBlock) {
+                break;
+            }
             selectedBlocks.push(nextBlock);
             blockKey = nextBlock.getKey();
         }

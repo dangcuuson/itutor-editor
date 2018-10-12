@@ -64,6 +64,7 @@ class Toolbar extends React.Component<Props> {
                     <ToggleButton
                         value="center"
                         onMouseDown={this.preventBubblingUp}
+                        onClick={() => this.setAlignment('center')}
                         children={<FormatAlignCenter />}
                     />
                     <ToggleButton
@@ -71,11 +72,6 @@ class Toolbar extends React.Component<Props> {
                         onMouseDown={this.preventBubblingUp}
                         onClick={() => this.setAlignment('right')}
                         children={<FormatAlignRight />}
-                    />
-                    <ToggleButton
-                        value="justify"
-                        onMouseDown={this.preventBubblingUp}
-                        children={<FormatAlignJustify />}
                     />
                 </ToggleButtonGroup>
             </React.Fragment>

@@ -3,39 +3,19 @@ import { DraftPlugin } from './draft-js-plugins-editor';
 import { EditorState, ContentBlock, Modifier } from 'draft-js';
 import { getSelectedBlocks } from './utils';
 import * as Immutable from 'immutable';
+import './alignmentPlugin.css';
 
-export type Alignment = 'left' | 'right' | 'center' | 'justify';
+export type Alignment = 'left' | 'right' | 'center';
 
 export const createAlignmentPlugin = (): DraftPlugin => {
     return {
-        decorators: [{
-            strategy: (block, callback) => {
-                callback(0, block.getLength());
-            },
-            component: TestComponent
-        }],
-        // blockRendererFn: (contentBlock, pluginFns) => {
-        //     const entityKey = contentBlock.getEntityAt(0);
-        //     const contentState = pluginFns.getEditorState().getCurrentContent();
-        //     const alignmentData: AlignmentData = entityKey ? contentState.getEntity(entityKey).getData() : {};
-        //     return {
-        //         props: {
-        //             alignment: alignmentData.alignment
-        //         },
-        //         component: TestComponent
-        //     };
-        // }
+        blockStyleFn: (contentBlock: ContentBlock) => {
+            const blockData = contentBlock.getData();
+            const align = blockData.get('alignment', 'left');
+            return `iTutor-editor-align-${align}`;
+        }
     };
 };
-
-class TestComponent extends React.Component<any> {
-    render() {
-        console.log('>>HERE', this.props);
-        return (
-            <span style={{ float: 'right' }}>{this.props.children}</span>
-        );
-    }
-}
 
 export const getAlignment = (editorState: EditorState): Alignment | undefined => {
     const getAlignmentOfBlock = (block: ContentBlock): Alignment => {
