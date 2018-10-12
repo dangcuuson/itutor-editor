@@ -3,7 +3,7 @@ import {
     EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw, ContentBlock
 } from 'draft-js';
 import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
-import { createInlineImgPlugin, InsertImgBtn } from './plugins/inlineImagePlugin';
+import { createInlineImgPlugin, insertImg } from './plugins/inlineImagePlugin';
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
 import Toolbar from './plugins/toolbar';
 
@@ -41,7 +41,7 @@ export default class ITutorEditor extends React.Component<Props, State> {
         }
         return 'not-handled';
     }
-    
+
     componentDidUpdate() {
         const rawContent = convertToRaw(this.state.editorState.getCurrentContent());
         localStorage.setItem('itutor', JSON.stringify(rawContent));
@@ -60,9 +60,10 @@ export default class ITutorEditor extends React.Component<Props, State> {
                     plugins={this.plugins}
                     handleKeyCommand={this.handleRichTextCommand}
                 />
-                <InsertImgBtn
-                    editorState={this.state.editorState}
-                    onChange={this.onChange}
+                <button
+                    // tslint:disable-next-line:max-line-length
+                    onClick={() => this.setState({ editorState: insertImg(this.state.editorState, { src: 'https://support.kickofflabs.com/wp-content/uploads/2016/06/300x150.png' }) })}
+                    children="Insert dummy image"
                 />
             </div>
         );

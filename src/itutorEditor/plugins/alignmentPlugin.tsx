@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { DraftPlugin } from './draft-js-plugins-editor';
 import { EditorState, ContentBlock, Modifier } from 'draft-js';
 import { getSelectedBlocks } from './utils';
