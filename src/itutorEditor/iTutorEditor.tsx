@@ -5,6 +5,7 @@ import {
 import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
 import { createInlineImgPlugin, insertImg, ImgData } from './plugins/inlineImagePlugin';
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
+import { createColorPlugin, setColor } from './plugins/colorPlugin';
 import Toolbar from './plugins/toolbar';
 
 interface Props { }
@@ -47,7 +48,8 @@ export default class ITutorEditor extends React.Component<Props, State> {
         };
         this.plugins.push(
             createAlignmentPlugin(),
-            createInlineImgPlugin()
+            createInlineImgPlugin(),
+            createColorPlugin()
         );
     }
 
@@ -96,12 +98,6 @@ export default class ITutorEditor extends React.Component<Props, State> {
                         handleKeyCommand={this.handleRichTextCommand}
                     />
                 </div>
-
-                <button
-                    // tslint:disable-next-line:max-line-length
-                    onClick={() => this.setState({ editorState: insertImg(this.state.editorState, { src: 'https://support.kickofflabs.com/wp-content/uploads/2016/06/300x150.png' }) })}
-                    children="Insert dummy image"
-                />
             </div>
         );
     }

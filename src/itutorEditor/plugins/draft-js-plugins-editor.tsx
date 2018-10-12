@@ -35,6 +35,7 @@ export interface DraftPlugin {
     blockStyleFn?: (block: ContentBlock, pluginFuncs: PluginFunctions) => string;
     blockRendererMap?: Immutable.Map<any, any>;
     customStyleMap?: any;
+    customStyleFn?: (style: Immutable.OrderedSet<string>, pluginFuncs: PluginFunctions) => React.CSSProperties;
     handleReturn?: (e: SyntheticKeyboardEvent, editorState: EditorState, pluginFuncs: PluginFunctions) => DraftHandleValue;
     handleKeyCommand?: (command: string, editorState: EditorState, pluginFuncs: PluginFunctions) => DraftHandleValue;
     handleBeforeInput?: (chars: string, editorState: EditorState, pluginFuncs: PluginFunctions) => DraftHandleValue;

@@ -1,10 +1,12 @@
 import * as React from 'react';
+import { SketchPicker, ColorResult } from 'react-color';
 import { EditorState, RichUtils } from 'draft-js';
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
-import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core';
+import { createStyles, withStyles, WithStyles, Theme, Popover } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
-import { FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatAlignJustify } from '@material-ui/icons';
+import { FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorFill } from '@material-ui/icons';
 import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';
+import { getColor, setColor } from './colorPlugin';
 
 interface OwnProps {
     editorState: EditorState;
@@ -13,7 +15,16 @@ interface OwnProps {
 
 type Props = OwnProps & WithStyles<typeof styles>;
 
-class Toolbar extends React.Component<Props> {
+interface State {
+    showColorPicker?: boolean;
+}
+
+class Toolbar extends React.Component<Props, State> {
+
+    constructor(props: Props) {
+        super(props);
+        this.state = {};
+    }
 
     toggleInlineStyle = (style: 'BOLD' | 'ITALIC' | 'UNDERLINE') => {
         const newEditorState = RichUtils.toggleInlineStyle(this.props.editorState, style);
@@ -25,12 +36,18 @@ class Toolbar extends React.Component<Props> {
         this.props.onChange(newEditorState);
     }
 
+    setColor = (color: string) => {
+        const newEditorState = setColor(this.props.editorState, color);
+        this.props.onChange(newEditorState);
+    }
+
     preventBubblingUp = (event) => { event.preventDefault(); };
 
     render() {
         const { editorState, classes } = this.props;
         const inlineStyles = editorState.getCurrentInlineStyle().toArray();
         const alignment = getAlignment(editorState);
+        const color = getColor(editorState);
         return (
             <React.Fragment>
                 <ToggleButtonGroup value={inlineStyles} className={classes.toggleContainer}>
@@ -73,6 +90,22 @@ class Toolbar extends React.Component<Props> {
                         onClick={() => this.setAlignment('right')}
                         children={<FormatAlignRight />}
                     />
+                </ToggleButtonGroup>
+                <ToggleButtonGroup>
+                    <ToggleButton
+                        value="color"
+                        onMouseDown={this.preventBubblingUp}
+                        onClick={e => this.setState({ showColorPicker: !this.state.showColorPicker })}
+                        children={<FormatColorFill style={{ color }} />}
+                    />
+                    {!!this.state.showColorPicker && (
+                        <div style={{ position: 'absolute' }}>
+                            <SketchPicker
+                                color={color}
+                                onChange={result => this.setColor(result.hex)}
+                            />
+                        </div>
+                    )}
                 </ToggleButtonGroup>
             </React.Fragment>
         );
