@@ -65,7 +65,6 @@ class InlineImgComponent extends React.Component<InlineImgProps & DragCollectedP
 }
 
 interface DragObj extends InlineImgProps {
-    selectionBeforeDrag: SelectionState;
 }
 const DragDropType = 'INLINE_IMAGE';
 const dragSpec: DragSourceSpec<InlineImgProps, DragObj> = {
@@ -82,7 +81,6 @@ const dragSpec: DragSourceSpec<InlineImgProps, DragObj> = {
         const editorState = getEditorState();
         const selectionState = editorState.getSelection();
 
-        const entity = contentState.getEntity(entityKey);
         const block = contentState.getBlockForKey(offsetKey.split('-')[0]);
         const blockKey = block.getKey();
         block.findEntityRanges(charMeta => charMeta.getEntity() === entityKey, (start, end) => {
@@ -91,15 +89,11 @@ const dragSpec: DragSourceSpec<InlineImgProps, DragObj> = {
                 .set('anchorKey', blockKey)
                 .set('anchorOffset', start)
                 .set('focusKey', blockKey)
-                .set('focusOffset', end)
-                .set('hasFocus', true) as SelectionState;
+                .set('focusOffset', end) as SelectionState;
 
-            const data = entity.getData() as ImgDataWithSelection;
-
-            const newContentState = Modifier.removeRange(contentState, entitySelection, 'backward');
+            const newContentState = Modifier.moveText(contentState, entitySelection, selectionState);
             const newEditorState = EditorState.push(editorState, newContentState, 'change-block-data');
-
-            setEditorState(insertImg(newEditorState, data, selectionState));
+            setEditorState(newEditorState);
         });
     }
 };
@@ -114,9 +108,9 @@ const dragCollector: DragSourceCollector<DragCollectedProps> = (connect, monitor
 });
 const InlineImgWithDragDrop = DragSource(DragDropType, dragSpec, dragCollector)(InlineImgComponent);
 
-export const insertImg = (editorState: EditorState, data: ImgData, overrideSelection?: SelectionState): EditorState => {
+export const insertImg = (editorState: EditorState, data: ImgData): EditorState => {
     let contentState = editorState.getCurrentContent();
-    let selectionState = overrideSelection || editorState.getSelection();
+    let selectionState = editorState.getSelection();
 
     if (!selectionState.isCollapsed()) {
         contentState = Modifier.removeRange(contentState, selectionState, 'backward');
