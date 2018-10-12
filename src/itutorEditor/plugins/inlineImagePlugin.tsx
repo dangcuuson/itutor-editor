@@ -9,15 +9,6 @@ export interface ImgData {
     src: string;
 }
 
-interface ImgDataWithSelection extends ImgData {
-    anchorKey: string;
-    anchorOffset: number;
-    focusKey: string;
-    focusOffset: number;
-    isBackward: boolean;
-    hasFocus: boolean;
-}
-
 export const createInlineImgPlugin = (): DraftPlugin => {
     return {
         decorators: [{
@@ -32,7 +23,7 @@ export const createInlineImgPlugin = (): DraftPlugin => {
                 };
                 block.findEntityRanges(filterFn, callback);
             },
-            component: InlineImgWithDragDrop
+            component: InlineImgComponent
         }]
     };
 };
@@ -47,19 +38,19 @@ interface InlineImgProps {
 }
 class InlineImgComponent extends React.Component<InlineImgProps & DragCollectedProps> {
     render() {
-        const { contentState, connectDragSource, entityKey } = this.props;
+        const { contentState, entityKey } = this.props;
         const entity = contentState.getEntity(entityKey);
         const data = entity.getData() as ImgData;
         return (
-            connectDragSource(
-                <span>
-                    <img
-                        src={data.src}
-                        style={{ cursor: 'pointer' }}
-                    />
-                    {this.props.children}
-                </span>
-            )
+            // this.props.connectDragSource(
+            <span>
+                <img
+                    src={data.src}
+                    style={{ cursor: 'pointer' }}
+                />
+                {this.props.children}
+            </span>
+            // )
         );
     }
 }

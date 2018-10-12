@@ -7,10 +7,10 @@ class App extends React.Component {
     render() {
         return (
             <div>
-                <ITutorEditor />
-                <br />
-                <br />
                 <button onClick={() => localStorage.clear()}>Clear Local storage</button>
+                <br />
+                <br />
+                <ITutorEditor />
             </div>
         );
     }
