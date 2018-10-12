@@ -9,6 +9,15 @@ export interface ImgData {
     src: string;
 }
 
+interface ImgDataWithSelection extends ImgData {
+    anchorKey: string;
+    anchorOffset: number;
+    focusKey: string;
+    focusOffset: number;
+    isBackward: boolean;
+    hasFocus: boolean;
+}
+
 export const createInlineImgPlugin = (): DraftPlugin => {
     return {
         decorators: [{
@@ -32,7 +41,7 @@ interface InlineImgProps {
     contentState: ContentState;
     decoratedText: string;
     entityKey: string;
-    offetKey: string;
+    offsetKey: string;
     getEditorState: () => EditorState;
     setEditorState: (editorState: EditorState) => void;
 }
@@ -55,7 +64,7 @@ class InlineImgComponent extends React.Component<InlineImgProps & DragCollectedP
     }
 }
 
-interface DragObj extends InlineImgProps { 
+interface DragObj extends InlineImgProps {
     selectionBeforeDrag: SelectionState;
 }
 const DragDropType = 'INLINE_IMAGE';
@@ -68,16 +77,30 @@ const dragSpec: DragSourceSpec<InlineImgProps, DragObj> = {
     },
     endDrag: (props, monitor) => {
         const dragObj = monitor.getItem() as DragObj;
-        const { contentState, entityKey, setEditorState, getEditorState, selectionBeforeDrag } = dragObj;
+        const { contentState, entityKey, setEditorState, getEditorState, offsetKey } = dragObj;
 
         const editorState = getEditorState();
+        const selectionState = editorState.getSelection();
 
         const entity = contentState.getEntity(entityKey);
-        const data = entity.getData() as ImgData;
-        const newContentState = Modifier.removeRange(contentState, selectionBeforeDrag, 'forward');
-        const newEditorState = EditorState.push(editorState, newContentState, 'change-block-data');
-        
-        setEditorState(insertImg(newEditorState, data));
+        const block = contentState.getBlockForKey(offsetKey.split('-')[0]);
+        const blockKey = block.getKey();
+        block.findEntityRanges(charMeta => charMeta.getEntity() === entityKey, (start, end) => {
+            const entitySelection = SelectionState
+                .createEmpty(blockKey)
+                .set('anchorKey', blockKey)
+                .set('anchorOffset', start)
+                .set('focusKey', blockKey)
+                .set('focusOffset', end)
+                .set('hasFocus', true) as SelectionState;
+
+            const data = entity.getData() as ImgDataWithSelection;
+
+            const newContentState = Modifier.removeRange(contentState, entitySelection, 'backward');
+            const newEditorState = EditorState.push(editorState, newContentState, 'change-block-data');
+
+            setEditorState(insertImg(newEditorState, data, selectionState));
+        });
     }
 };
 
@@ -91,9 +114,14 @@ const dragCollector: DragSourceCollector<DragCollectedProps> = (connect, monitor
 });
 const InlineImgWithDragDrop = DragSource(DragDropType, dragSpec, dragCollector)(InlineImgComponent);
 
-export const insertImg = (editorState: EditorState, data: ImgData): EditorState => {
-    const contentState = editorState.getCurrentContent();
-    const selectionState = editorState.getSelection();
+export const insertImg = (editorState: EditorState, data: ImgData, overrideSelection?: SelectionState): EditorState => {
+    let contentState = editorState.getCurrentContent();
+    let selectionState = overrideSelection || editorState.getSelection();
+
+    if (!selectionState.isCollapsed()) {
+        contentState = Modifier.removeRange(contentState, selectionState, 'backward');
+        selectionState = contentState.getSelectionAfter();
+    }
 
     const contentStateWithEntity = contentState.createEntity(
         INLINE_IMAGE,
