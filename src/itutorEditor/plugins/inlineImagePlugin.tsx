@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { EditorState, Modifier, CharacterMetadata, ContentState } from 'draft-js';
+import { DragSource, DragSourceSpec, DragSourceCollector, ConnectDragSource } from 'react-dnd';
+import { EditorState, Modifier, CharacterMetadata, ContentState, SelectionState } from 'draft-js';
 import { DraftPlugin } from './draft-js-plugins-editor';
 
 const INLINE_IMAGE = 'INLINE_IMAGE';
@@ -22,7 +23,7 @@ export const createInlineImgPlugin = (): DraftPlugin => {
                 };
                 block.findEntityRanges(filterFn, callback);
             },
-            component: InlineImgComponent
+            component: InlineImgWithDragDrop
         }]
     };
 };
@@ -33,26 +34,62 @@ interface InlineImgProps {
     entityKey: string;
     offetKey: string;
     getEditorState: () => EditorState;
+    setEditorState: (editorState: EditorState) => void;
 }
-class InlineImgComponent extends React.Component<InlineImgProps> {
-    childSpanWrapperRef: HTMLElement | null;
+class InlineImgComponent extends React.Component<InlineImgProps & DragCollectedProps> {
     render() {
-        const props = this.props;
-        const entity = props.contentState.getEntity(props.entityKey);
+        const { contentState, connectDragSource, entityKey } = this.props;
+        const entity = contentState.getEntity(entityKey);
         const data = entity.getData() as ImgData;
         return (
-            <span>
-                <img
-                    src={data.src}
-                    style={{ cursor: 'pointer' }}
-                />
-                <span ref={r => this.childSpanWrapperRef = r}>
+            connectDragSource(
+                <span>
+                    <img
+                        src={data.src}
+                        style={{ cursor: 'pointer' }}
+                    />
                     {this.props.children}
                 </span>
-            </span>
+            )
         );
     }
 }
+
+interface DragObj extends InlineImgProps { 
+    selectionBeforeDrag: SelectionState;
+}
+const DragDropType = 'INLINE_IMAGE';
+const dragSpec: DragSourceSpec<InlineImgProps, DragObj> = {
+    beginDrag: props => {
+        return {
+            ...props,
+            selectionBeforeDrag: props.getEditorState().getSelection()
+        };
+    },
+    endDrag: (props, monitor) => {
+        const dragObj = monitor.getItem() as DragObj;
+        const { contentState, entityKey, setEditorState, getEditorState, selectionBeforeDrag } = dragObj;
+
+        const editorState = getEditorState();
+
+        const entity = contentState.getEntity(entityKey);
+        const data = entity.getData() as ImgData;
+        const newContentState = Modifier.removeRange(contentState, selectionBeforeDrag, 'forward');
+        const newEditorState = EditorState.push(editorState, newContentState, 'change-block-data');
+        
+        setEditorState(insertImg(newEditorState, data));
+    }
+};
+
+interface DragCollectedProps {
+    connectDragSource: ConnectDragSource;
+    isDragging: boolean;
+}
+const dragCollector: DragSourceCollector<DragCollectedProps> = (connect, monitor) => ({
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+});
+const InlineImgWithDragDrop = DragSource(DragDropType, dragSpec, dragCollector)(InlineImgComponent);
 
 export const insertImg = (editorState: EditorState, data: ImgData): EditorState => {
     const contentState = editorState.getCurrentContent();
