@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw, ContentBlock
+    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw
 } from 'draft-js';
 import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
 import { createInlineImgPlugin, insertImg } from './plugins/inlineImagePlugin';

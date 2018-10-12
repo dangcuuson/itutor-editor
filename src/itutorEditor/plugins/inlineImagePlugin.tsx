@@ -1,4 +1,3 @@
-/* tslint:disable */
 import * as React from 'react';
 import { EditorState, Modifier, CharacterMetadata, ContentState } from 'draft-js';
 import { DraftPlugin } from './draft-js-plugins-editor';
@@ -36,6 +35,7 @@ interface InlineImgProps {
     getEditorState: () => EditorState;
 }
 class InlineImgComponent extends React.Component<InlineImgProps> {
+    childSpanWrapperRef: HTMLElement | null;
     render() {
         const props = this.props;
         const entity = props.contentState.getEntity(props.entityKey);
@@ -46,7 +46,9 @@ class InlineImgComponent extends React.Component<InlineImgProps> {
                     src={data.src}
                     style={{ cursor: 'pointer' }}
                 />
-                {this.props.children}
+                <span ref={r => this.childSpanWrapperRef = r}>
+                    {this.props.children}
+                </span>
             </span>
         );
     }
@@ -73,4 +75,4 @@ export const insertImg = (editorState: EditorState, data: ImgData): EditorState 
 
     const newEditorState = EditorState.push(editorState, newContentState, 'change-block-data');
     return newEditorState;
-}
+};

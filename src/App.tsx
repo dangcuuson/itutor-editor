@@ -1,7 +1,9 @@
 import * as React from 'react';
+import HTML5Backend from 'react-dnd-html5-backend';
+import { DragDropContext } from 'react-dnd';
 import ITutorEditor from './itutorEditor/iTutorEditor';
 
-export default class App extends React.Component {
+class App extends React.Component {
     render() {
         return (
             <div>
@@ -13,3 +15,5 @@ export default class App extends React.Component {
         );
     }
 }
+
+export default DragDropContext(HTML5Backend)(App);
