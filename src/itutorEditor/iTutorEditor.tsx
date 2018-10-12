@@ -3,7 +3,9 @@ import {
     EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw
 } from 'draft-js';
 import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
-import { createInlineImgPlugin, insertImgFn, ImgData } from './plugins/inlineImagePlugin';
+import { createInlineImgPlugin, InsertImgBtn } from './plugins/inlineImagePlugin';
+import { createAlignmentPlugin } from './plugins/alignmentPlugin';
+import Toolbar from './plugins/toolbar';
 
 interface Props { }
 
@@ -23,14 +25,13 @@ export default class ITutorEditor extends React.Component<Props, State> {
                     ? EditorState.createWithContent(convertFromRaw(JSON.parse(savedContent)))
                     : EditorState.createEmpty()
         };
-        this.plugins.push(createInlineImgPlugin());
+        this.plugins.push(
+            createAlignmentPlugin(),
+            createInlineImgPlugin()
+        );
     }
 
     onChange = (editorState: EditorState) => this.setState({ editorState });
-
-    insertImg = (data: ImgData) => {
-        this.setState({ editorState: insertImgFn(this.state.editorState, data) });
-    }
 
     handleRichTextCommand = (command: string, editorState: EditorState): DraftHandleValue => {
         const RichEditorState = RichUtils.handleKeyCommand(editorState, command);
@@ -49,16 +50,19 @@ export default class ITutorEditor extends React.Component<Props, State> {
     render() {
         return (
             <div>
+                <Toolbar
+                    editorState={this.state.editorState}
+                    onChange={this.onChange}
+                />
                 <Editor
                     editorState={this.state.editorState}
                     onChange={this.onChange}
                     plugins={this.plugins}
                     handleKeyCommand={this.handleRichTextCommand}
                 />
-                <button
-                    // tslint:disable-next-line:max-line-length
-                    onClick={() => this.insertImg({ src: 'https://cdn.vox-cdn.com/thumbor/th5YNVqlkHqkz03Va5RPOXZQRhA=/0x0:2040x1360/1200x800/filters:focal(857x517:1183x843)/cdn.vox-cdn.com/uploads/chorus_image/image/57358643/jbareham_170504_1691_0020.0.0.jpg' })}
-                    children="Insert dummy img"
+                <InsertImgBtn
+                    editorState={this.state.editorState}
+                    onChange={this.onChange}
                 />
             </div>
         );

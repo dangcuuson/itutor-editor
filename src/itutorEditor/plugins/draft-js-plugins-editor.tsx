@@ -22,7 +22,7 @@ export interface PluginFunctions {
     getEditorRef: () => Editor;
 }
 
-export interface DraftDecorator<TProps = Object> {
+export interface DraftDecorator<TProps = any> {
     strategy: (block: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) => void;
     component: Function;
     props?: TProps;
