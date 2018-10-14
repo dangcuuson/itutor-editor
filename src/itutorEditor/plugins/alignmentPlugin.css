@@ -1,20 +1,30 @@
-.iTutor-editor-align-left {
+.iTutor-editor-align {
     display: flex;
-    justify-content: flex-start;
     flex-wrap: wrap;
     word-break: break-all;
+}
+.iTutor-editor-align-left {
+    justify-content: flex-start;
 }
 
 .iTutor-editor-align-right {
-    display: flex;
     justify-content: flex-end;
-    flex-wrap: wrap;
-    word-break: break-all;
 }
 
 .iTutor-editor-align-center {
-    display: flex;
     justify-content: center;
-    flex-wrap: wrap;
-    word-break: break-all;
+}
+
+ol {
+    counter-reset: section;
+    list-style-type: none;
+}
+  
+ol > li.iTutor-editor-align::before {
+    counter-increment: section;
+    content: counters(section, ".") ". ";
+}
+
+ul > li.iTutor-editor-align::before {
+    content: '\2022 '
 }

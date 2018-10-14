@@ -1,10 +1,13 @@
 import * as React from 'react';
 import { SketchPicker } from 'react-color';
-import { EditorState, RichUtils } from 'draft-js';
+import { EditorState, RichUtils, DraftBlockType } from 'draft-js';
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
 import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
-import { FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorFill } from '@material-ui/icons';
+import {
+    FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorText,
+    FormatListBulleted, FormatListNumbered
+} from '@material-ui/icons';
 import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';
 import { getColor, setColor } from './colorPlugin';
 
@@ -20,6 +23,8 @@ interface State {
 }
 
 class Toolbar extends React.Component<Props, State> {
+    colorPickerWrapperRef: HTMLElement | null;
+    colorPickerBtnRef: HTMLElement | null;
 
     constructor(props: Props) {
         super(props);
@@ -41,13 +46,41 @@ class Toolbar extends React.Component<Props, State> {
         this.props.onChange(newEditorState);
     }
 
+    setBlockType = (blockType: DraftBlockType) => {
+        const newEditorState = RichUtils.toggleBlockType(this.props.editorState, blockType);
+        this.props.onChange(newEditorState);
+    }
+
     preventBubblingUp = (event) => { event.preventDefault(); };
+
+    handleWindowClick = (event: MouseEvent) => {
+        if (!this.colorPickerBtnRef || !this.colorPickerWrapperRef) {
+            return;
+        }
+
+        if (this.colorPickerBtnRef.contains(event.target as any)) {
+            return;
+        }
+
+        if (!this.colorPickerWrapperRef.contains(event.target as any)) {
+            this.setState({ showColorPicker: false });
+        }
+    }
+
+    componentDidMount() {
+        window.addEventListener('click', this.handleWindowClick);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('click', this.handleWindowClick);
+    }
 
     render() {
         const { editorState, classes } = this.props;
         const inlineStyles = editorState.getCurrentInlineStyle().toArray();
         const alignment = getAlignment(editorState);
         const color = getColor(editorState);
+        const blockType = RichUtils.getCurrentBlockType(editorState);
         return (
             <React.Fragment>
                 <ToggleButtonGroup value={inlineStyles} className={classes.toggleContainer}>
@@ -94,12 +127,16 @@ class Toolbar extends React.Component<Props, State> {
                 <ToggleButtonGroup>
                     <ToggleButton
                         value="color"
+                        buttonRef={r => { this.colorPickerBtnRef = r; }}
                         onMouseDown={this.preventBubblingUp}
                         onClick={e => this.setState({ showColorPicker: !this.state.showColorPicker })}
-                        children={<FormatColorFill style={{ color }} />}
+                        children={<FormatColorText style={{ color }} />}
                     />
                     {!!this.state.showColorPicker && (
-                        <div style={{ position: 'absolute' }}>
+                        <div
+                            ref={r => { this.colorPickerWrapperRef = r; }}
+                            style={{ position: 'absolute', zIndex: 1 }}
+                        >
                             <SketchPicker
                                 color={color}
                                 onChange={result => this.setColor(result.hex)}
@@ -107,7 +144,21 @@ class Toolbar extends React.Component<Props, State> {
                         </div>
                     )}
                 </ToggleButtonGroup>
-            </React.Fragment>
+                <ToggleButtonGroup value={blockType} className={classes.toggleContainer}>
+                    <ToggleButton
+                        value="ordered-list-item"
+                        onMouseDown={this.preventBubblingUp}
+                        onClick={() => this.setBlockType('ordered-list-item')}
+                        children={<FormatListNumbered />}
+                    />
+                    <ToggleButton
+                        value="unordered-list-item"
+                        onMouseDown={this.preventBubblingUp}
+                        onClick={() => this.setBlockType('unordered-list-item')}
+                        children={<FormatListBulleted />}
+                    />
+                </ToggleButtonGroup>
+            </React.Fragment >
         );
     }
 }

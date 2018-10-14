@@ -5,7 +5,7 @@ import {
 import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
 import { createInlineImgPlugin, insertImg, ImgData } from './plugins/inlineImagePlugin';
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
-import { createColorPlugin, setColor } from './plugins/colorPlugin';
+import { createColorPlugin } from './plugins/colorPlugin';
 import Toolbar from './plugins/toolbar';
 
 interface Props { }
