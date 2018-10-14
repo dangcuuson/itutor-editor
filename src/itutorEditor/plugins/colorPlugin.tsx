@@ -20,10 +20,6 @@ const getColorStyles = (editorState: EditorState) => {
     const selectedBlocks = getSelectedBlocks(editorState);
     return selectedBlocks.reduce<Immutable.Set<string>>(
         (acc, block) => {
-            if (!acc || !block) {
-                return Immutable.Set<string>();
-            }
-            
             const blockKey = block.getKey();
             const start = blockKey === startKey ? startOffset : 0;
             const end = blockKey === endKey ? endOffset : block.getLength();
@@ -34,7 +30,8 @@ const getColorStyles = (editorState: EditorState) => {
                 .filter(style => !!style && style.startsWith(COLOR_STYLE_PREFIX));
 
             return acc.merge(blockStyles);
-        }
+        },
+        Immutable.Set<string>()
     );
 };
 

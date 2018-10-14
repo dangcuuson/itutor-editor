@@ -24,7 +24,7 @@ export const getAlignment = (editorState: EditorState): Alignment | undefined =>
     };
 
     const selectedBlocks = getSelectedBlocks(editorState);
-    const blockAlignments = selectedBlocks.map(getAlignmentOfBlock).toSet();
+    const blockAlignments = Immutable.Set(selectedBlocks.map(getAlignmentOfBlock));
     return blockAlignments.size === 1 ? blockAlignments.first() : undefined;
 };
 

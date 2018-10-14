@@ -11,5 +11,5 @@ export const getSelectedBlocks = (editorState: EditorState) => {
     const startKeyIndex = blockKeys.findIndex(v => v === startKey);
     const endKeyIndex = blockKeys.findIndex(v => v === endKey);
 
-    return blockMap.slice(startKeyIndex, endKeyIndex + 1).toList();
+    return blockMap.slice(startKeyIndex, endKeyIndex + 1).toList().toArray();
 };
