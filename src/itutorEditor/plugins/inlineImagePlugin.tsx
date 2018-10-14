@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { EditorState, Modifier, CharacterMetadata, ContentState } from 'draft-js';
 import { DraftPlugin } from './draft-js-plugins-editor';
-
 const INLINE_IMAGE = 'INLINE_IMAGE';
 
 export interface ImgData {

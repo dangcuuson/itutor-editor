@@ -24,16 +24,8 @@ export const getAlignment = (editorState: EditorState): Alignment | undefined =>
     };
 
     const selectedBlocks = getSelectedBlocks(editorState);
-
-    let alignment = getAlignmentOfBlock(selectedBlocks[0]);
-    for (let i = 1; i < selectedBlocks.length; i++) {
-        const nextAlignment = getAlignmentOfBlock(selectedBlocks[i]);
-        if (alignment !== nextAlignment) {
-            return undefined;
-        }
-    }
-
-    return alignment;
+    const blockAlignments = selectedBlocks.map(getAlignmentOfBlock).toSet();
+    return blockAlignments.size === 1 ? blockAlignments.first() : undefined;
 };
 
 export const setAlignment = (editorState: EditorState, alignment: Alignment): EditorState => {
