@@ -1,10 +1,8 @@
 import * as React from 'react';
 import {
-    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap,
-    SelectionState,
-    CompositeDecorator
+    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw,
 } from 'draft-js';
-import { createInlineImgPlugin, insertImg, ImgData, decorators } from './plugins/inlineImagePlugin';
+import { createInlineImgPlugin, insertImg, ImgData } from './plugins/inlineImagePlugin';
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
 import { createColorPlugin } from './plugins/colorPlugin';
 import { setFontSize, createFontSizePlugin } from './plugins/fontSizePlugin';

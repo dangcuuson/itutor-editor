@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as _ from 'lodash';
 import {
-    Editor, EditorProps, EditorState, ContentBlock, ContentState, CompositeDecorator, DraftHandleValue
+    Editor, EditorProps, EditorState, ContentBlock, ContentState, CompositeDecorator, DraftHandleValue,
+    DefaultDraftBlockRenderMap
 } from 'draft-js';
 
 export interface PluginCreator {
@@ -15,7 +16,7 @@ export interface PluginCreatorArgs {
 
 export interface DraftPlugin extends Pick<
     EditorProps,
-    'blockStyleFn' | 'blockRendererFn' | 'customStyleFn' | 'handleDroppedFiles' | 'handlePastedFiles'
+    'blockStyleFn' | 'blockRendererFn' | 'blockRenderMap' | 'customStyleFn' | 'handleDroppedFiles' | 'handlePastedFiles'
     > {
     decorators?: DraftDecorator[];
 }
@@ -42,8 +43,8 @@ export const createEditorWithPlugins = (
             super(props);
 
             const creatorArgs: PluginCreatorArgs = {
-                getEditorState: () => props.editorState,
-                setEditorState: props.onChange
+                getEditorState: () => this.props.editorState,
+                setEditorState: this.props.onChange
             };
             this.plugins = pluginCreators.map(creator => creator(creatorArgs));
         }
@@ -77,6 +78,14 @@ export const createEditorWithPlugins = (
                         }
                     }
                 };
+            };
+
+            const blockRenderMap: () => EditorProps['blockRenderMap'] = () => {
+                const maps = getPropsArray('blockRenderMap').filter(isDefined);
+                if (maps.length === 0) {
+                    return undefined;
+                }
+                return maps.reduce((acc, map) => acc.merge(map), DefaultDraftBlockRenderMap);
             };
 
             const customStyleFn: () => EditorProps['customStyleFn'] = () => {
@@ -127,6 +136,7 @@ export const createEditorWithPlugins = (
                 editorState: editorStateWithDecorators,
                 blockStyleFn: blockStyleFn(),
                 blockRendererFn: blockRendererFn(),
+                blockRenderMap: blockRenderMap(),
                 customStyleFn: customStyleFn(),
                 handleDroppedFiles: combineHandleFns(getPropsArray('handleDroppedFiles')),
                 handlePastedFiles: combineHandleFns(getPropsArray('handlePastedFiles'))
