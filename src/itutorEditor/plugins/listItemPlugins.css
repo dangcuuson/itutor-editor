@@ -1,0 +1,13 @@
+ol.iTutor-editor-list {
+    counter-reset: section;
+    list-style-type: none;
+}
+  
+ol.iTutor-editor-list.li::before {
+    counter-increment: section;
+    content: counters(section, ".") ". ";
+}
+
+ul.iTutor-editor-list.li::before {
+    content: '\2022 '
+}

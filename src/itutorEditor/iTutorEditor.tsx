@@ -6,6 +6,7 @@ import { createInlineImgPlugin, insertImg, ImgData } from './plugins/inlineImage
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
 import { createColorPlugin } from './plugins/colorPlugin';
 import { setFontSize, createFontSizePlugin } from './plugins/fontSizePlugin';
+import { createListItemPlugin } from './plugins/listItemPlugins';
 import Toolbar from './plugins/toolbar';
 import { createEditorWithPlugins } from './plugins/createEditorWithPlugins';
 
@@ -39,7 +40,8 @@ const EditorWithPlugins = createEditorWithPlugins([
     createAlignmentPlugin,
     createInlineImgPlugin,
     createColorPlugin,
-    createFontSizePlugin
+    createFontSizePlugin,
+    createListItemPlugin
 ]);
 
 export default class ITutorEditor extends React.Component<Props, State> {
@@ -81,7 +83,6 @@ export default class ITutorEditor extends React.Component<Props, State> {
     }
 
     componentDidUpdate() {
-        console.log('>>editorState', this.state.editorState);
         const rawContent = convertToRaw(this.state.editorState.getCurrentContent());
         localStorage.setItem('itutor', JSON.stringify(rawContent));
     }

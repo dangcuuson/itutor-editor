@@ -4,6 +4,7 @@ import {
     Editor, EditorProps, EditorState, ContentBlock, ContentState, CompositeDecorator, DraftHandleValue,
     DefaultDraftBlockRenderMap
 } from 'draft-js';
+import * as Immutable from 'immutable';
 
 export interface PluginCreator {
     (args: PluginCreatorArgs): DraftPlugin;
@@ -12,6 +13,7 @@ export interface PluginCreator {
 export interface PluginCreatorArgs {
     getEditorState: () => EditorState;
     setEditorState: (editorState: EditorState) => void;
+    getCustomStyleFn: () => EditorProps['customStyleFn'];
 }
 
 export interface DraftPlugin extends Pick<
@@ -44,7 +46,8 @@ export const createEditorWithPlugins = (
 
             const creatorArgs: PluginCreatorArgs = {
                 getEditorState: () => this.props.editorState,
-                setEditorState: this.props.onChange
+                setEditorState: this.props.onChange,
+                getCustomStyleFn: () => this.mergePluginsToProps(this.props).customStyleFn
             };
             this.plugins = pluginCreators.map(creator => creator(creatorArgs));
         }
