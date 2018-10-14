@@ -1,4 +1,4 @@
-import { DraftPlugin } from './draft-js-plugins-editor';
+import { PluginCreator } from './createEditorWithPlugins';
 import { EditorState, ContentBlock, Modifier } from 'draft-js';
 import { getSelectedBlocks } from './utils';
 import * as Immutable from 'immutable';
@@ -6,7 +6,7 @@ import './alignmentPlugin.css';
 
 export type Alignment = 'left' | 'right' | 'center';
 
-export const createAlignmentPlugin = (): DraftPlugin => {
+export const createAlignmentPlugin: PluginCreator = () => {
     return {
         blockStyleFn: (contentBlock: ContentBlock) => {
             const blockData = contentBlock.getData();

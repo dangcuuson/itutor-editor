@@ -1,12 +1,15 @@
 import * as React from 'react';
 import {
-    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw
+    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap,
+    SelectionState,
+    CompositeDecorator
 } from 'draft-js';
-import Editor, { DraftPlugin } from './plugins/draft-js-plugins-editor';
-import { createInlineImgPlugin, insertImg, ImgData } from './plugins/inlineImagePlugin';
+import { createInlineImgPlugin, insertImg, ImgData, decorators } from './plugins/inlineImagePlugin';
 import { createAlignmentPlugin } from './plugins/alignmentPlugin';
 import { createColorPlugin } from './plugins/colorPlugin';
+import { setFontSize, createFontSizePlugin } from './plugins/fontSizePlugin';
 import Toolbar from './plugins/toolbar';
+import { createEditorWithPlugins } from './plugins/createEditorWithPlugins';
 
 interface Props { }
 
@@ -34,23 +37,24 @@ const readLocalImage = (file: File): Promise<ImgData> => {
     });
 };
 
-export default class ITutorEditor extends React.Component<Props, State> {
-    plugins: DraftPlugin[] = [];
+const EditorWithPlugins = createEditorWithPlugins([
+    createAlignmentPlugin,
+    createInlineImgPlugin,
+    createColorPlugin,
+    createFontSizePlugin
+]);
 
+export default class ITutorEditor extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         const savedContent = localStorage.getItem('itutor');
         this.state = {
             editorState:
                 savedContent
+                    // tslint:disable-next-line:max-line-length
                     ? EditorState.createWithContent(convertFromRaw(JSON.parse(savedContent)))
                     : EditorState.createEmpty()
         };
-        this.plugins.push(
-            createAlignmentPlugin(),
-            createInlineImgPlugin(),
-            createColorPlugin()
-        );
     }
 
     onChange = (editorState: EditorState) => this.setState({ editorState });
@@ -79,6 +83,7 @@ export default class ITutorEditor extends React.Component<Props, State> {
     }
 
     componentDidUpdate() {
+        console.log('>>editorState', this.state.editorState);
         const rawContent = convertToRaw(this.state.editorState.getCurrentContent());
         localStorage.setItem('itutor', JSON.stringify(rawContent));
     }
@@ -90,12 +95,22 @@ export default class ITutorEditor extends React.Component<Props, State> {
                     editorState={this.state.editorState}
                     onChange={this.onChange}
                 />
-                <div onDrop={this.onFileDrop}>
-                    <Editor
+                {/* <div onDrop={this.onFileDrop}> */}
+                <div>
+                    <EditorWithPlugins
                         editorState={this.state.editorState}
                         onChange={this.onChange}
-                        plugins={this.plugins}
                         handleKeyCommand={this.handleRichTextCommand}
+                    />
+                    <button
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => {
+                            const editorState = this.state.editorState;
+                            this.setState({
+                                editorState: setFontSize(editorState, Math.floor(Math.random() * 40) + 10 + '')
+                            });
+                        }}
+                        children="bla"
                     />
                 </div>
             </div>

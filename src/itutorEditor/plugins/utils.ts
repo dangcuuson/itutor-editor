@@ -1,4 +1,4 @@
-import { EditorState } from 'draft-js';
+import { EditorState, ContentBlock, ContentState } from 'draft-js';
 
 export const getSelectedBlocks = (editorState: EditorState) => {
     const contentState = editorState.getCurrentContent();
@@ -12,4 +12,10 @@ export const getSelectedBlocks = (editorState: EditorState) => {
     const endKeyIndex = blockKeys.findIndex(v => v === endKey);
 
     return blockMap.slice(startKeyIndex, endKeyIndex + 1).toList().toArray();
+};
+
+export const updateBlock = (contentState: ContentState, block: ContentBlock): ContentState => {
+    return contentState.merge({
+        blockMap: contentState.getBlockMap().merge({[block.getKey()]: block})
+    }) as ContentState;
 };

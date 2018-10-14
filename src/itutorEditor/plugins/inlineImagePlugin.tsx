@@ -1,14 +1,51 @@
 import * as React from 'react';
-import { EditorState, Modifier, CharacterMetadata, ContentState } from 'draft-js';
-import { DraftPlugin } from './draft-js-plugins-editor';
-const INLINE_IMAGE = 'INLINE_IMAGE';
+import { EditorState, Modifier, CharacterMetadata, ContentState, SelectionState } from 'draft-js';
+import { PluginCreator } from './createEditorWithPlugins';
+
+const ENTITY_TYPE = 'INLINE_IMAGE';
 
 export interface ImgData {
     src: string;
 }
 
-export const createInlineImgPlugin = (): DraftPlugin => {
+const imgFileTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/bmp'];
+
+const readLocalImage = (file: File): Promise<ImgData> => {
+    return new Promise<ImgData>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = event => {
+            if (!event.target) {
+                return reject('Something is wrong with the File uploaded...');
+            }
+            const imgData: ImgData = {
+                // tslint:disable-next-line:no-string-literal
+                src: event.target['result']
+            };
+            resolve(imgData);
+        };
+        reader.onerror = reject;
+        reader.onabort = reject;
+
+        reader.readAsDataURL(file);
+    });
+};
+
+export const createInlineImgPlugin: PluginCreator = ({ getEditorState, setEditorState }) => {
     return {
+        handleDroppedFiles: (selection, files: File[]) => {
+            const isImgFiles = files.every(file => imgFileTypes.includes(file.type));
+            if (!isImgFiles) {
+                return 'not-handled';
+            }
+            let editorState = getEditorState();
+            files.forEach(file => {
+                readLocalImage(file).then(imgData => {
+                    editorState = insertImg(editorState, imgData, selection);
+                });
+                setEditorState(editorState);
+            });
+            return 'handled';
+        },
         decorators: [{
             strategy: (block, callback, contentState) => {
                 const filterFn = (metadata: CharacterMetadata): boolean => {
@@ -17,7 +54,7 @@ export const createInlineImgPlugin = (): DraftPlugin => {
                         return false;
                     }
                     const entity = contentState.getEntity(entityKey);
-                    return !!entity && entity.getType() === INLINE_IMAGE;
+                    return !!entity && entity.getType() === ENTITY_TYPE;
                 };
                 block.findEntityRanges(filterFn, callback);
             },
@@ -51,9 +88,24 @@ class InlineImgComponent extends React.Component<InlineImgProps> {
     }
 }
 
-export const insertImg = (editorState: EditorState, data: ImgData): EditorState => {
+export const decorators = [{
+    strategy: (block, callback, contentState) => {
+        const filterFn = (metadata: CharacterMetadata): boolean => {
+            const entityKey = metadata.getEntity();
+            if (!entityKey) {
+                return false;
+            }
+            const entity = contentState.getEntity(entityKey);
+            return !!entity && entity.getType() === ENTITY_TYPE;
+        };
+        block.findEntityRanges(filterFn, callback);
+    },
+    component: InlineImgComponent
+}];
+
+export const insertImg = (editorState: EditorState, data: ImgData, selection?: SelectionState): EditorState => {
     let contentState = editorState.getCurrentContent();
-    let selectionState = editorState.getSelection();
+    let selectionState = selection || editorState.getSelection();
 
     if (!selectionState.isCollapsed()) {
         contentState = Modifier.removeRange(contentState, selectionState, 'backward');
@@ -61,7 +113,7 @@ export const insertImg = (editorState: EditorState, data: ImgData): EditorState 
     }
 
     const contentStateWithEntity = contentState.createEntity(
-        INLINE_IMAGE,
+        ENTITY_TYPE,
         'IMMUTABLE',
         data
     );

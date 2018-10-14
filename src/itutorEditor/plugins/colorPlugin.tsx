@@ -1,5 +1,5 @@
 import { EditorState, Modifier, RichUtils, ContentState, SelectionState } from 'draft-js';
-import { DraftPlugin } from './draft-js-plugins-editor';
+import { PluginCreator } from './createEditorWithPlugins';
 import { getSelectedBlocks } from './utils';
 import * as Immutable from 'immutable';
 
@@ -63,19 +63,21 @@ export const getColor = (editorState: EditorState): string => {
         return '';
     }
 
-    return colorStyles.toJS()[0].replace(COLOR_STYLE_PREFIX, '');
+    return colorStyles.first().replace(COLOR_STYLE_PREFIX, '');
 };
 
-export const createColorPlugin = (): DraftPlugin => {
-    return {
-        customStyleFn: (inlineStyles) => {
-            const colorStyle = inlineStyles.find(s => !!s && s.startsWith(COLOR_STYLE_PREFIX));
-            if (!colorStyle) {
-                return {};
-            }
+export const getColorStyleFn = (inlineStyles: Immutable.OrderedSet<string>): React.CSSProperties => {
+    const colorStyle = inlineStyles.find(s => !!s && s.startsWith(COLOR_STYLE_PREFIX));
+    if (!colorStyle) {
+        return {};
+    }
 
-            const color = colorStyle.replace(COLOR_STYLE_PREFIX, '');
-            return { color };
-        }
+    const color = colorStyle.replace(COLOR_STYLE_PREFIX, '');
+    return { color };
+};
+
+export const createColorPlugin: PluginCreator = () => {
+    return {
+        customStyleFn: getColorStyleFn
     };
 };

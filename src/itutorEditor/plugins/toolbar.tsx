@@ -2,12 +2,13 @@ import * as React from 'react';
 import { SketchPicker } from 'react-color';
 import { EditorState, RichUtils, DraftBlockType } from 'draft-js';
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
-import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core';
+import { createStyles, withStyles, WithStyles, Theme, TextField } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import {
     FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorText,
     FormatListBulleted, FormatListNumbered
 } from '@material-ui/icons';
+import { getFontSize, setFontSize } from './fontSizePlugin';
 import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';
 import { getColor, setColor } from './colorPlugin';
 
@@ -46,6 +47,11 @@ class Toolbar extends React.Component<Props, State> {
         this.props.onChange(newEditorState);
     }
 
+    setFontSize = (fontSize: string) => {
+        const newEditorState = setFontSize(this.props.editorState, fontSize);
+        this.props.onChange(newEditorState);
+    }
+
     setBlockType = (blockType: DraftBlockType) => {
         const newEditorState = RichUtils.toggleBlockType(this.props.editorState, blockType);
         this.props.onChange(newEditorState);
@@ -81,6 +87,7 @@ class Toolbar extends React.Component<Props, State> {
         const alignment = getAlignment(editorState);
         const color = getColor(editorState);
         const blockType = RichUtils.getCurrentBlockType(editorState);
+        const fontSize = getFontSize(editorState);
         return (
             <React.Fragment>
                 <ToggleButtonGroup value={inlineStyles} className={classes.toggleContainer}>
@@ -158,6 +165,11 @@ class Toolbar extends React.Component<Props, State> {
                         children={<FormatListBulleted />}
                     />
                 </ToggleButtonGroup>
+                <TextField
+                    label="Font size"
+                    value={fontSize}
+                    onChange={e => this.setFontSize(e.currentTarget.value)}
+                />
             </React.Fragment >
         );
     }
