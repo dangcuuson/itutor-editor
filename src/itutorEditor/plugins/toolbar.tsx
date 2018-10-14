@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { SketchPicker, ColorResult } from 'react-color';
+import { SketchPicker } from 'react-color';
 import { EditorState, RichUtils } from 'draft-js';
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
-import { createStyles, withStyles, WithStyles, Theme, Popover } from '@material-ui/core';
+import { createStyles, withStyles, WithStyles, Theme } from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import { FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorFill } from '@material-ui/icons';
 import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';

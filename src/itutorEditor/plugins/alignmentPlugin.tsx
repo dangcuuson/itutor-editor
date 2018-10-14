@@ -10,7 +10,8 @@ export const createAlignmentPlugin = (): DraftPlugin => {
     return {
         blockStyleFn: (contentBlock: ContentBlock) => {
             const blockData = contentBlock.getData();
-            const align = blockData.get('alignment', 'left');
+            const defaultAlignment: Alignment = 'left';
+            const align = blockData.get('alignment', defaultAlignment);
             return `iTutor-editor-align-${align}`;
         }
     };
