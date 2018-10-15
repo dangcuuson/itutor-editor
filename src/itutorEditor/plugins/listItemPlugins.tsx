@@ -47,9 +47,10 @@ class ListItem extends React.Component<ItemProps> {
         if (styleSet.includes('ITALIC')) {
             style.fontStyle = 'italic';
         }
-        if (styleSet.includes('UNDERLINE')) {
-            style.textDecoration = 'underline';
-        }
+        // underline may not need to be included in the bullet
+        // if (styleSet.includes('UNDERLINE')) {
+        //     style.textDecoration = 'underline';
+        // }
 
         return <li style={style} {...props}>{this.props.children}</li>;
     }

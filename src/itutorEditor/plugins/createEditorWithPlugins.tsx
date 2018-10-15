@@ -18,7 +18,8 @@ export interface PluginCreatorArgs {
 
 export interface DraftPlugin extends Pick<
     EditorProps,
-    'blockStyleFn' | 'blockRendererFn' | 'blockRenderMap' | 'customStyleFn' | 'handleDroppedFiles' | 'handlePastedFiles'
+    'blockStyleFn' | 'blockRendererFn' | 'blockRenderMap' | 'customStyleFn' | 
+    'handleDroppedFiles' | 'handlePastedFiles' | 'handleKeyCommand'
     > {
     decorators?: DraftDecorator[];
 }
@@ -142,7 +143,8 @@ export const createEditorWithPlugins = (
                 blockRenderMap: blockRenderMap(),
                 customStyleFn: customStyleFn(),
                 handleDroppedFiles: combineHandleFns(getPropsArray('handleDroppedFiles')),
-                handlePastedFiles: combineHandleFns(getPropsArray('handlePastedFiles'))
+                handlePastedFiles: combineHandleFns(getPropsArray('handlePastedFiles')),
+                handleKeyCommand: combineHandleFns(getPropsArray('handleKeyCommand'))
             };
         }
 

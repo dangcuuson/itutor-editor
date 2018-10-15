@@ -1,8 +1,13 @@
 import * as React from 'react';
+import * as _ from 'lodash';
+import * as ClassNames from 'classnames';
 import { SketchPicker } from 'react-color';
 import { EditorState, RichUtils, DraftBlockType } from 'draft-js';
-import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab';
-import { createStyles, withStyles, WithStyles, Theme, TextField } from '@material-ui/core';
+import { ToggleButtonGroup } from '@material-ui/lab';
+import {
+    createStyles, withStyles, WithStyles, Theme, NativeSelect, FormControl,
+    InputLabel, Input, IconButton
+} from '@material-ui/core';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import {
     FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorText,
@@ -73,6 +78,24 @@ class Toolbar extends React.Component<Props, State> {
         }
     }
 
+    renderIconBtn(groupValues: (string | undefined)[], value: string, onClick: () => void, children: React.ReactChild) {
+        const { classes } = this.props;
+        const toggled = groupValues.includes(value);
+        const classNames = ClassNames({
+            [classes.btn]: true,
+            [classes.btnToggled]: toggled
+        });
+        return (
+            <IconButton
+                value={value}
+                className={classNames}
+                onClick={onClick}
+                onMouseDown={this.preventBubblingUp}
+                children={children}
+            />
+        );
+    }
+
     componentDidMount() {
         window.addEventListener('click', this.handleWindowClick);
     }
@@ -88,53 +111,52 @@ class Toolbar extends React.Component<Props, State> {
         const color = getColor(editorState);
         const blockType = RichUtils.getCurrentBlockType(editorState);
         const fontSize = getFontSize(editorState);
-        return (
-            <React.Fragment>
-                <ToggleButtonGroup value={inlineStyles} className={classes.toggleContainer}>
-                    <ToggleButton
-                        value="BOLD"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.toggleInlineStyle('BOLD')}
-                        children={<FormatBold />}
-                    />
-                    <ToggleButton
-                        value="ITALIC"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.toggleInlineStyle('ITALIC')}
-                        children={<FormatItalic />}
-                    />
-                    <ToggleButton
-                        value="UNDERLINE"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.toggleInlineStyle('UNDERLINE')}
-                        children={<FormatUnderlined />}
-                    />
-                </ToggleButtonGroup>
 
-                <ToggleButtonGroup value={alignment} className={classes.toggleContainer}>
-                    <ToggleButton
-                        value="left"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.setAlignment('left')}
-                        children={<FormatAlignLeft />}
-                    />
-                    <ToggleButton
-                        value="center"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.setAlignment('center')}
-                        children={<FormatAlignCenter />}
-                    />
-                    <ToggleButton
-                        value="right"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.setAlignment('right')}
-                        children={<FormatAlignRight />}
-                    />
-                </ToggleButtonGroup>
-                <ToggleButtonGroup>
-                    <ToggleButton
+        const alignmentLeft: Alignment = 'left';
+        const alignmentCenter: Alignment = 'center';
+        const alignmentRight: Alignment = 'right';
+        return (
+            <div className={classes.root}>
+                <div className={classes.btnGroup}>
+                    {this.renderIconBtn(
+                        inlineStyles, 'BOLD', () => this.toggleInlineStyle('BOLD'), <FormatBold />
+                    )}
+                    {this.renderIconBtn(
+                        inlineStyles, 'ITALIC', () => this.toggleInlineStyle('ITALIC'), <FormatItalic />
+                    )}
+                    {this.renderIconBtn(
+                        inlineStyles, 'UNDERLINE', () => this.toggleInlineStyle('UNDERLINE'), <FormatUnderlined />
+                    )}
+                </div>
+
+                <div className={classes.btnGroup}>
+                    {this.renderIconBtn(
+                        [alignment], alignmentLeft, () => this.setAlignment(alignmentLeft), <FormatAlignLeft />
+                    )}
+                    {this.renderIconBtn(
+                        [alignment], alignmentCenter, () => this.setAlignment(alignmentCenter), <FormatAlignCenter />
+                    )}
+                    {this.renderIconBtn(
+                        [alignment], alignmentRight, () => this.setAlignment(alignmentRight), <FormatAlignRight />
+                    )}
+                    {this.renderIconBtn(
+                        [blockType],
+                        'ordered-list-item',
+                        () => this.setBlockType('ordered-list-item'),
+                        <FormatListNumbered />
+                    )}
+                    {this.renderIconBtn(
+                        [blockType],
+                        'unordered-list-item',
+                        () => this.setBlockType('unordered-list-item'),
+                        <FormatListBulleted />
+                    )}
+                </div>
+                <div className={classes.btnGroup}>
+                    <IconButton
                         value="color"
                         buttonRef={r => { this.colorPickerBtnRef = r; }}
+                        className={classes.btn}
                         onMouseDown={this.preventBubblingUp}
                         onClick={e => this.setState({ showColorPicker: !this.state.showColorPicker })}
                         children={<FormatColorText style={{ color }} />}
@@ -150,40 +172,45 @@ class Toolbar extends React.Component<Props, State> {
                             />
                         </div>
                     )}
-                </ToggleButtonGroup>
-                <ToggleButtonGroup value={blockType} className={classes.toggleContainer}>
-                    <ToggleButton
-                        value="ordered-list-item"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.setBlockType('ordered-list-item')}
-                        children={<FormatListNumbered />}
-                    />
-                    <ToggleButton
-                        value="unordered-list-item"
-                        onMouseDown={this.preventBubblingUp}
-                        onClick={() => this.setBlockType('unordered-list-item')}
-                        children={<FormatListBulleted />}
-                    />
-                </ToggleButtonGroup>
-                <TextField
-                    label="Font size"
-                    value={fontSize}
-                    onChange={e => this.setFontSize(e.currentTarget.value)}
-                />
-            </React.Fragment >
+                    <FormControl>
+                        <InputLabel>Size</InputLabel>
+                        <NativeSelect
+                            value={fontSize}
+                            onChange={e => {
+                                const newFontSize = e.currentTarget.value;
+                                if (!newFontSize) {
+                                    return;
+                                }
+                                this.setFontSize(newFontSize);
+                            }}
+                            name="name"
+                            input={<Input />}
+                        >
+                            <option value={''} />
+                            {_.range(10, 71).map(size => <option key={size} value={size} children={size} />)}
+                        </NativeSelect>
+                    </FormControl>
+                </div>
+            </div >
         );
     }
 }
 
 const styles = (theme: Theme) => createStyles({
-    toggleContainer: {
-        height: 56,
-        padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+    root: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        margin: `${theme.spacing.unit}px 0`,
-        background: theme.palette.background.default,
+
+    },
+    btn: {
+        borderRadius: 0
+    },
+    btnToggled: {
+        backgroundColor: theme.palette.grey['400']
+    },
+    btnGroup: {
+        margin: `0 ${theme.spacing.unit}px`,
+        background: theme.palette.background.default
     }
 });
 

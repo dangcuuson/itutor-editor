@@ -71,7 +71,7 @@ export const createFontSizePlugin: PluginCreator = (): DraftPlugin => {
         customStyleFn: (inlineStyles) => {
             const fontSizeStyle = inlineStyles.find(s => !!s && s.startsWith(FONTSIZE_STYLE_PREFIX));
             if (!fontSizeStyle) {
-                return {};
+                return { fontSize: '16px' };
             }
 
             const fontSize = fontSizeStyle.replace(FONTSIZE_STYLE_PREFIX, '');
