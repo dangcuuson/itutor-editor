@@ -3,7 +3,6 @@ import * as _ from 'lodash';
 import * as ClassNames from 'classnames';
 import { SketchPicker } from 'react-color';
 import { EditorState, RichUtils, DraftBlockType } from 'draft-js';
-import { ToggleButtonGroup } from '@material-ui/lab';
 import {
     createStyles, withStyles, WithStyles, Theme, NativeSelect, FormControl,
     InputLabel, Input, IconButton
