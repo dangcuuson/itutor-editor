@@ -11,6 +11,11 @@ class App extends React.Component {
                 <br />
                 <br />
                 <ITutorEditor />
+
+                <br/>
+                <br/>
+                <br/>
+                <ITutorEditor readonly={true} />
             </div>
         );
     }

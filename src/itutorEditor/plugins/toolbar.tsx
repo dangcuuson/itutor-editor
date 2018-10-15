@@ -5,12 +5,13 @@ import { SketchPicker } from 'react-color';
 import { EditorState, RichUtils, DraftBlockType } from 'draft-js';
 import {
     createStyles, withStyles, WithStyles, Theme, NativeSelect, FormControl,
-    InputLabel, Input, IconButton
+    InputLabel, Input
 } from '@material-ui/core';
+import IconButton, { IconButtonProps } from '@material-ui/core/IconButton';
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import {
     FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorText,
-    FormatListBulleted, FormatListNumbered, FormatClear
+    FormatListBulleted, FormatListNumbered, FormatClear, Undo, Redo
 } from '@material-ui/icons';
 import { getFontSize, setFontSize } from './fontSizePlugin';
 import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';
@@ -67,6 +68,14 @@ class Toolbar extends React.Component<Props, State> {
         this.props.onChange(newEditorState);
     }
 
+    undo = () => {
+        this.props.onChange(EditorState.undo(this.props.editorState));
+    }
+
+    redo = () => {
+        this.props.onChange(EditorState.redo(this.props.editorState));
+    }
+
     preventBubblingUp = (event) => { event.preventDefault(); };
 
     handleWindowClick = (event: MouseEvent) => {
@@ -83,22 +92,29 @@ class Toolbar extends React.Component<Props, State> {
         }
     }
 
-    renderIconBtn(groupValues: (string | undefined)[], value: string, onClick: () => void, children: React.ReactChild) {
+    renderIconBtn(groupValues: any[], props: IconButtonProps) {
         const { classes } = this.props;
-        const toggled = groupValues.includes(value);
+        const toggled = groupValues.includes(props.value);
         const classNames = ClassNames({
             [classes.btn]: true,
             [classes.btnToggled]: toggled
         });
         return (
             <IconButton
-                value={value}
+                {...props}
                 className={classNames}
-                onClick={onClick}
                 onMouseDown={this.preventBubblingUp}
-                children={children}
             />
         );
+    }
+
+    decorateBtn = (element: React.ReactElement<IconButtonProps>, toggled?: boolean) => {
+        const { classes } = this.props;
+        const className = ClassNames({
+            [classes.btn]: true,
+            [classes.btnToggled]: toggled
+        });
+        return React.cloneElement(element, { className, onMouseDown: this.preventBubblingUp });
     }
 
     componentDidMount() {
@@ -117,44 +133,67 @@ class Toolbar extends React.Component<Props, State> {
         const blockType = RichUtils.getCurrentBlockType(editorState);
         const fontSize = getFontSize(editorState);
 
-        const alignmentLeft: Alignment = 'left';
-        const alignmentCenter: Alignment = 'center';
-        const alignmentRight: Alignment = 'right';
         return (
             <div className={classes.root}>
                 <div className={classes.btnGroup}>
-                    {this.renderIconBtn(
-                        inlineStyles, 'BOLD', () => this.toggleInlineStyle('BOLD'), <FormatBold />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.toggleInlineStyle('BOLD')}
+                            children={<FormatBold />}
+                        />,
+                        inlineStyles.includes('BOLD')
                     )}
-                    {this.renderIconBtn(
-                        inlineStyles, 'ITALIC', () => this.toggleInlineStyle('ITALIC'), <FormatItalic />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.toggleInlineStyle('ITALIC')}
+                            children={<FormatItalic />}
+                        />,
+                        inlineStyles.includes('ITALIC')
                     )}
-                    {this.renderIconBtn(
-                        inlineStyles, 'UNDERLINE', () => this.toggleInlineStyle('UNDERLINE'), <FormatUnderlined />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.toggleInlineStyle('UNDERLINE')}
+                            children={<FormatUnderlined />}
+                        />,
+                        inlineStyles.includes('UNDERLINE')
                     )}
                 </div>
 
                 <div className={classes.btnGroup}>
-                    {this.renderIconBtn(
-                        [alignment], alignmentLeft, () => this.setAlignment(alignmentLeft), <FormatAlignLeft />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.setAlignment('left')}
+                            children={<FormatAlignLeft />}
+                        />,
+                        alignment === 'left'
                     )}
-                    {this.renderIconBtn(
-                        [alignment], alignmentCenter, () => this.setAlignment(alignmentCenter), <FormatAlignCenter />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.setAlignment('center')}
+                            children={<FormatAlignCenter />}
+                        />,
+                        alignment === 'center'
                     )}
-                    {this.renderIconBtn(
-                        [alignment], alignmentRight, () => this.setAlignment(alignmentRight), <FormatAlignRight />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.setAlignment('right')}
+                            children={<FormatAlignRight />}
+                        />,
+                        alignment === 'right'
                     )}
-                    {this.renderIconBtn(
-                        [blockType],
-                        'ordered-list-item',
-                        () => this.setBlockType('ordered-list-item'),
-                        <FormatListNumbered />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.setBlockType('ordered-list-item')}
+                            children={<FormatListNumbered />}
+                        />,
+                        blockType === 'ordered-list-item'
                     )}
-                    {this.renderIconBtn(
-                        [blockType],
-                        'unordered-list-item',
-                        () => this.setBlockType('unordered-list-item'),
-                        <FormatListBulleted />
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={() => this.setBlockType('unordered-list-item')}
+                            children={<FormatListBulleted />}
+                        />,
+                        blockType === 'unordered-list-item'
                     )}
                 </div>
                 <div className={classes.btnGroup}>
@@ -195,7 +234,28 @@ class Toolbar extends React.Component<Props, State> {
                             />
                         </div>
                     )}
-                    {this.renderIconBtn([], 'clear-format', this.clearInlineStyle, <FormatClear />)}
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={this.clearInlineStyle}
+                            children={<FormatClear />}
+                        />
+                    )}
+                </div>
+                <div className={`${classes.btnGroup} ${classes.btnGroupRight}`}>
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={this.undo}
+                            disabled={editorState.getUndoStack().size === 0}
+                            children={<Undo />}
+                        />
+                    )}
+                    {this.decorateBtn(
+                        <IconButton
+                            onClick={this.redo}
+                            disabled={editorState.getRedoStack().size === 0}
+                            children={<Redo />}
+                        />
+                    )}
                 </div>
             </div >
         );
@@ -205,8 +265,7 @@ class Toolbar extends React.Component<Props, State> {
 const styles = (theme: Theme) => createStyles({
     root: {
         display: 'flex',
-        alignItems: 'center',
-
+        alignItems: 'center'
     },
     btn: {
         borderRadius: 0
@@ -215,8 +274,12 @@ const styles = (theme: Theme) => createStyles({
         backgroundColor: theme.palette.grey['400']
     },
     btnGroup: {
-        margin: `0 ${theme.spacing.unit}px`,
+        margin: `0 ${theme.spacing.unit * 2}px`,
+        paddingTop: theme.spacing.unit + 'px',
         background: theme.palette.background.default
+    },
+    btnGroupRight: {
+        marginLeft: 'auto'
     }
 });
 
