@@ -34,7 +34,6 @@
     "react-color": "2.14.1",
     "react-dev-utils": "^5.0.2",
     "react-dnd": "5.0.0",
-    "react-dnd-html5-backend": "5.0.1",
     "react-dom": "^16.5.2",
     "react-dropzone": "6.0.4",
     "resolve": "1.6.0",

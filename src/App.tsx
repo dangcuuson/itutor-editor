@@ -1,11 +1,8 @@
 import * as React from 'react';
-import HTML5Backend from 'react-dnd-html5-backend';
-import { DragDropContext } from 'react-dnd';
 import ITutorEditor from './itutorEditor/iTutorEditor';
 import { EditorState, convertFromRaw, convertToRaw } from 'draft-js';
-import * as Immutable from 'immutable';
 
-class App extends React.Component<{}, { editorState: EditorState, editorState2: EditorState }> {
+export default class App extends React.Component<{}, { editorState: EditorState, editorState2: EditorState }> {
     constructor(props: {}) {
         super(props);
 
@@ -48,5 +45,3 @@ class App extends React.Component<{}, { editorState: EditorState, editorState2: 
         );
     }
 }
-
-export default DragDropContext(HTML5Backend)(App);
