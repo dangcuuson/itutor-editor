@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as classNames from 'classnames';
 import { Theme, withStyles, WithStyles, createStyles, Paper } from '@material-ui/core';
 import {
-    EditorState, RichUtils, DraftHandleValue, convertToRaw, convertFromRaw,
+    Editor, EditorState, RichUtils, DraftHandleValue, convertToRaw,
+    convertFromRaw, getDefaultKeyBinding, KeyBindingUtil
 } from 'draft-js';
 import { createEditorWithPlugins } from './plugins/createEditorWithPlugins';
 import { createInlineImgPlugin } from './plugins/inlineImagePlugin';
@@ -31,6 +32,8 @@ const EditorWithPlugins = createEditorWithPlugins([
 ]);
 
 class ITutorEditor extends React.Component<Props, State> {
+    editorRef: React.RefObject<Editor>;
+
     constructor(props: Props) {
         super(props);
         const savedContent = localStorage.getItem('itutor');
@@ -40,6 +43,7 @@ class ITutorEditor extends React.Component<Props, State> {
                     ? EditorState.createWithContent(convertFromRaw(JSON.parse(savedContent)))
                     : EditorState.createEmpty()
         };
+        this.editorRef = React.createRef();
     }
 
     onChange = (editorState: EditorState) => {
@@ -56,6 +60,44 @@ class ITutorEditor extends React.Component<Props, State> {
             return 'handled';
         }
         return 'not-handled';
+    }
+
+    keyBindingFn = (e: React.KeyboardEvent): string | null => {
+
+        let keyBindingResult: string | null = getDefaultKeyBinding(e);
+
+        // default keybinding treat ctrl/cmd + y as 'secondary-paste'
+        // overwrite it to redo
+        if (keyBindingResult === 'secondary-paste') {
+            // ctrl/cmd + y => redo
+            if (e.key === 'y' && KeyBindingUtil.hasCommandModifier(e)) {
+                keyBindingResult = 'redo';
+            }
+        }
+        
+        return keyBindingResult;
+    }
+
+    focus = () => {
+        if (!this.editorRef.current) {
+            return;
+        }
+
+        this.editorRef.current.focus();
+    }
+
+    // when drag & drop files to editor, user may accidentally
+    // drop it outside the editor, causing the windows to open the file
+    preventAccientDrop = (e: DragEvent) => e.preventDefault();
+
+    componentDidMount() {
+        window.addEventListener('dragover', this.preventAccientDrop, false);
+        window.addEventListener('drop', this.preventAccientDrop, false);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('dragover', this.preventAccientDrop, false);
+        window.removeEventListener('drop', this.preventAccientDrop, false);
     }
 
     componentDidUpdate() {
@@ -84,13 +126,15 @@ class ITutorEditor extends React.Component<Props, State> {
                         [classes.editor]: true,
                         [classes.readonly]: !!readonly
                     })}
+                    onClick={this.focus}
                 >
                     <EditorWithPlugins
+                        editorRef={this.editorRef}
                         editorState={this.state.editorState}
+                        handleKeyCommand={this.handleRichTextCommand}
+                        keyBindingFn={this.keyBindingFn}
                         onChange={this.onChange}
                         readOnly={readonly}
-                        placeholder={!!readonly ? '' : 'Tell a story...'}
-                        handleKeyCommand={this.handleRichTextCommand}
                     />
                 </EditorWrapper>
             </div>

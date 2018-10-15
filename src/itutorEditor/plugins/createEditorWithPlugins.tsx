@@ -46,11 +46,15 @@ function isDefined<T>(value: T | undefined): value is T {
     return typeof value !== 'undefined';
 }
 
+interface EditorPropsWithRef extends EditorProps {
+    editorRef?: React.Ref<Editor>;
+}
+
 export const createEditorWithPlugins = (
     pluginCreators: PluginCreator[]
-): React.ComponentClass<EditorProps> => {
+): React.ComponentClass<EditorPropsWithRef> => {
 
-    return class extends React.Component<EditorProps> {
+    return class extends React.Component<EditorPropsWithRef> {
 
         plugins: DraftPlugin[];
 
@@ -169,7 +173,8 @@ export const createEditorWithPlugins = (
         }
 
         render() {
-            return <Editor {...this.mergePluginsToProps(this.props)} />;
+            return <Editor {...this.mergePluginsToProps(this.props)} ref={this.props.editorRef} />;
+            
         }
     };
 };
