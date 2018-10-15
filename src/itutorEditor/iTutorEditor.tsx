@@ -3,7 +3,7 @@ import * as classNames from 'classnames';
 import { Theme, withStyles, WithStyles, createStyles, Paper } from '@material-ui/core';
 import {
     Editor, EditorState, RichUtils, DraftHandleValue, convertToRaw,
-    convertFromRaw, getDefaultKeyBinding, KeyBindingUtil
+    getDefaultKeyBinding, KeyBindingUtil
 } from 'draft-js';
 import { createEditorWithPlugins } from './plugins/createEditorWithPlugins';
 import { createInlineImgPlugin } from './plugins/inlineImagePlugin';
@@ -14,14 +14,12 @@ import { createListItemPlugin } from './plugins/listItemPlugins';
 import Toolbar from './plugins/toolbar';
 
 interface OwnProps {
+    editorState: EditorState;
+    onChange?: (editorState: EditorState) => void;
     readonly?: boolean;
 }
 
 type Props = OwnProps & WithStyles<typeof styles>;
-
-interface State {
-    editorState: EditorState;
-}
 
 const EditorWithPlugins = createEditorWithPlugins([
     createAlignmentPlugin,
@@ -31,32 +29,28 @@ const EditorWithPlugins = createEditorWithPlugins([
     createListItemPlugin
 ]);
 
-class ITutorEditor extends React.Component<Props, State> {
+class ITutorEditor extends React.Component<Props> {
+
+    static defaultProps = { editorState: EditorState.createEmpty() };
+
     editorRef: React.RefObject<Editor>;
 
     constructor(props: Props) {
         super(props);
-        const savedContent = localStorage.getItem('itutor');
-        this.state = {
-            editorState:
-                savedContent
-                    ? EditorState.createWithContent(convertFromRaw(JSON.parse(savedContent)))
-                    : EditorState.createEmpty()
-        };
         this.editorRef = React.createRef();
     }
 
-    onChange = (editorState: EditorState) => {
-        if (this.props.readonly) {
+    handleChange = (editorState: EditorState) => {
+        if (this.props.readonly || !this.props.onChange) {
             return;
         }
-        this.setState({ editorState });
+        this.props.onChange(editorState);
     }
 
     handleRichTextCommand = (command: string, editorState: EditorState): DraftHandleValue => {
         const newEditorState = RichUtils.handleKeyCommand(editorState, command);
         if (!!newEditorState) {
-            this.onChange(newEditorState);
+            this.handleChange(newEditorState);
             return 'handled';
         }
         return 'not-handled';
@@ -101,8 +95,7 @@ class ITutorEditor extends React.Component<Props, State> {
     }
 
     componentDidUpdate() {
-        const rawContent = convertToRaw(this.state.editorState.getCurrentContent());
-        localStorage.setItem('itutor', JSON.stringify(rawContent));
+        this.focus();
     }
 
     render() {
@@ -117,8 +110,8 @@ class ITutorEditor extends React.Component<Props, State> {
             >
                 {!readonly && (
                     <Toolbar
-                        editorState={this.state.editorState}
-                        onChange={this.onChange}
+                        editorState={this.props.editorState}
+                        onChange={this.handleChange}
                     />
                 )}
                 <EditorWrapper
@@ -130,10 +123,10 @@ class ITutorEditor extends React.Component<Props, State> {
                 >
                     <EditorWithPlugins
                         editorRef={this.editorRef}
-                        editorState={this.state.editorState}
+                        editorState={this.props.editorState}
                         handleKeyCommand={this.handleRichTextCommand}
                         keyBindingFn={this.keyBindingFn}
-                        onChange={this.onChange}
+                        onChange={this.handleChange}
                         readOnly={readonly}
                     />
                 </EditorWrapper>
