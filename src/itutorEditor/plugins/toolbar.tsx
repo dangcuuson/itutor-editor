@@ -10,11 +10,12 @@ import {
 import { FormatBold, FormatItalic, FormatUnderlined } from '@material-ui/icons';
 import {
     FormatAlignLeft, FormatAlignCenter, FormatAlignRight, FormatColorText,
-    FormatListBulleted, FormatListNumbered
+    FormatListBulleted, FormatListNumbered, FormatClear
 } from '@material-ui/icons';
 import { getFontSize, setFontSize } from './fontSizePlugin';
 import { getAlignment, setAlignment, Alignment } from './alignmentPlugin';
 import { getColor, setColor } from './colorPlugin';
+import { clearAllInlineStyle } from './utils';
 
 interface OwnProps {
     editorState: EditorState;
@@ -58,6 +59,11 @@ class Toolbar extends React.Component<Props, State> {
 
     setBlockType = (blockType: DraftBlockType) => {
         const newEditorState = RichUtils.toggleBlockType(this.props.editorState, blockType);
+        this.props.onChange(newEditorState);
+    }
+
+    clearInlineStyle = () => {
+        const newEditorState = clearAllInlineStyle(this.props.editorState);
         this.props.onChange(newEditorState);
     }
 
@@ -152,6 +158,24 @@ class Toolbar extends React.Component<Props, State> {
                     )}
                 </div>
                 <div className={classes.btnGroup}>
+                    <FormControl>
+                        <InputLabel>Font Size</InputLabel>
+                        <NativeSelect
+                            value={fontSize}
+                            onChange={e => {
+                                const newFontSize = e.currentTarget.value;
+                                if (!newFontSize) {
+                                    return;
+                                }
+                                this.setFontSize(newFontSize);
+                            }}
+                            style={{ width: '75px' }}
+                            input={<Input />}
+                        >
+                            <option value={''} />
+                            {_.range(10, 71).map(size => <option key={size} value={size} children={size} />)}
+                        </NativeSelect>
+                    </FormControl>
                     <IconButton
                         value="color"
                         buttonRef={r => { this.colorPickerBtnRef = r; }}
@@ -171,24 +195,7 @@ class Toolbar extends React.Component<Props, State> {
                             />
                         </div>
                     )}
-                    <FormControl>
-                        <InputLabel>Size</InputLabel>
-                        <NativeSelect
-                            value={fontSize}
-                            onChange={e => {
-                                const newFontSize = e.currentTarget.value;
-                                if (!newFontSize) {
-                                    return;
-                                }
-                                this.setFontSize(newFontSize);
-                            }}
-                            name="name"
-                            input={<Input />}
-                        >
-                            <option value={''} />
-                            {_.range(10, 71).map(size => <option key={size} value={size} children={size} />)}
-                        </NativeSelect>
-                    </FormControl>
+                    {this.renderIconBtn([], 'clear-format', this.clearInlineStyle, <FormatClear />)}
                 </div>
             </div >
         );

@@ -4,7 +4,6 @@ import {
     Editor, EditorProps, EditorState, ContentBlock, ContentState, CompositeDecorator, DraftHandleValue,
     DefaultDraftBlockRenderMap
 } from 'draft-js';
-import * as Immutable from 'immutable';
 
 export interface PluginCreator {
     (args: PluginCreatorArgs): DraftPlugin;
@@ -18,11 +17,24 @@ export interface PluginCreatorArgs {
 
 export interface DraftPlugin extends Pick<
     EditorProps,
-    'blockStyleFn' | 'blockRendererFn' | 'blockRenderMap' | 'customStyleFn' | 
-    'handleDroppedFiles' | 'handlePastedFiles' | 'handleKeyCommand'
+    'blockStyleFn' | 'blockRendererFn' | 'blockRenderMap' | 'customStyleFn' |
+    'handleKeyCommand' | 'handleReturn' | 'handleBeforeInput' |
+    'handlePastedFiles' | 'handleDroppedFiles' | 'handleDrop'
     > {
     decorators?: DraftDecorator[];
 }
+
+type OptionalToNull<T> = {
+    [K in keyof T]-?: undefined extends T[K] ? T[K] | null : T[K];
+};
+
+type NullToUndefined<T> = {
+    [K in keyof T]: null extends T[K] ? NonNullable<T[K]> | undefined : T[K];
+};
+
+// e.g: { x?: string } => { x: string | undefined }
+// the idea is to make Typescript complain if we create obj with missing field
+type OptionalToOrUndefined<T> = NullToUndefined<OptionalToNull<T>>;
 
 export interface DraftDecorator<TProps = any> {
     strategy: (block: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) => void;
@@ -59,7 +71,7 @@ export const createEditorWithPlugins = (
                 return [props[key], ...plugins.map(p => p[key])];
             }
 
-            const blockStyleFn: () => EditorProps['blockStyleFn'] = () => {
+            const mergeBlockStyleFn: () => EditorProps['blockStyleFn'] = () => {
                 const fns = getPropsArray('blockStyleFn').filter(isDefined);
                 if (fns.length === 0) {
                     return undefined;
@@ -69,7 +81,7 @@ export const createEditorWithPlugins = (
                 };
             };
 
-            const blockRendererFn: () => EditorProps['blockRendererFn'] = () => {
+            const mergeBlockRendererFn: () => EditorProps['blockRendererFn'] = () => {
                 const fns = getPropsArray('blockRendererFn').filter(isDefined);
                 if (fns.length === 0) {
                     return undefined;
@@ -84,7 +96,7 @@ export const createEditorWithPlugins = (
                 };
             };
 
-            const blockRenderMap: () => EditorProps['blockRenderMap'] = () => {
+            const mergeBlockRenderMap: () => EditorProps['blockRenderMap'] = () => {
                 const maps = getPropsArray('blockRenderMap').filter(isDefined);
                 if (maps.length === 0) {
                     return undefined;
@@ -92,7 +104,7 @@ export const createEditorWithPlugins = (
                 return maps.reduce((acc, map) => acc.merge(map), DefaultDraftBlockRenderMap);
             };
 
-            const customStyleFn: () => EditorProps['customStyleFn'] = () => {
+            const mergeCustomStyleFn: () => EditorProps['customStyleFn'] = () => {
                 const fns = getPropsArray('customStyleFn').filter(isDefined);
                 if (fns.length === 0) {
                     return undefined;
@@ -110,7 +122,7 @@ export const createEditorWithPlugins = (
 
             type HandleFn<TArgs extends Array<any>> = (...args: TArgs) => DraftHandleValue;
 
-            function combineHandleFns<TArgs extends Array<any>>(
+            function mergeHandleFns<TArgs extends Array<any>>(
                 handleFns: (HandleFn<TArgs> | undefined)[]
             ): HandleFn<TArgs> {
                 const fns = handleFns.filter(isDefined);
@@ -135,16 +147,24 @@ export const createEditorWithPlugins = (
                 ? props.editorState
                 : EditorState.set(props.editorState, { decorator });
 
+            const propsMergedWithPlugin: OptionalToOrUndefined<DraftPlugin> = {
+                blockStyleFn: mergeBlockStyleFn(),
+                blockRendererFn: mergeBlockRendererFn(),
+                blockRenderMap: mergeBlockRenderMap(),
+                customStyleFn: mergeCustomStyleFn(),
+                handleKeyCommand: mergeHandleFns(getPropsArray('handleKeyCommand')),
+                handleReturn: mergeHandleFns(getPropsArray('handleReturn')),
+                handleBeforeInput: mergeHandleFns(getPropsArray('handleBeforeInput')),
+                handleDroppedFiles: mergeHandleFns(getPropsArray('handleDroppedFiles')),
+                handlePastedFiles: mergeHandleFns(getPropsArray('handlePastedFiles')),
+                handleDrop: mergeHandleFns(getPropsArray('handleDrop')),
+                decorators: undefined
+            };
+
             return {
                 ...props,
                 editorState: editorStateWithDecorators,
-                blockStyleFn: blockStyleFn(),
-                blockRendererFn: blockRendererFn(),
-                blockRenderMap: blockRenderMap(),
-                customStyleFn: customStyleFn(),
-                handleDroppedFiles: combineHandleFns(getPropsArray('handleDroppedFiles')),
-                handlePastedFiles: combineHandleFns(getPropsArray('handlePastedFiles')),
-                handleKeyCommand: combineHandleFns(getPropsArray('handleKeyCommand'))
+                ...propsMergedWithPlugin as any
             };
         }
 

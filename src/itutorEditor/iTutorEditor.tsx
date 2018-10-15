@@ -10,7 +10,9 @@ import { createFontSizePlugin } from './plugins/fontSizePlugin';
 import { createListItemPlugin } from './plugins/listItemPlugins';
 import Toolbar from './plugins/toolbar';
 
-interface Props { }
+interface Props { 
+    readonly?: boolean;
+}
 
 interface State {
     editorState: EditorState;
