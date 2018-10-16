@@ -94,10 +94,6 @@ class ITutorEditor extends React.Component<Props> {
         window.removeEventListener('drop', this.preventAccientDrop, false);
     }
 
-    componentDidUpdate() {
-        this.focus();
-    }
-
     render() {
         const { readonly, classes } = this.props;
         const EditorWrapper = readonly ? 'div' : Paper;
